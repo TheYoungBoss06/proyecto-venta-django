@@ -1,0 +1,27 @@
+# Ignorar el entorno virtual
+entornovirtual/
+
+# Archivos de base de datos
+*.sqlite3
+db.sqlite3
+
+# Archivos de Python
+*.pyc
+__pycache__/
+.Python
+.venv/
+venv/
+
+# Archivos de Django
+/media/
+/static_collected/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE (VS Code)
+.vscode/
+
+# Archivos de logs
+*.log

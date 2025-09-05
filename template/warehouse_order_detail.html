@@ -1,0 +1,83 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+    <h2 class="text-center mb-4">Detalles de la Orden #{{ order.id }}</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Información de la Orden
+        </div>
+        <div class="card-body">
+            <p><strong>Cliente:</strong> {{ order.user.username }}</p>
+            <p><strong>Monto Total:</strong> ${{ order.total_amount|floatformat:2 }}</p>
+            <p><strong>Estado:</strong> {{ order.get_status_display }}</p>
+            <p><strong>Fecha de Creación:</strong> {{ order.created_at|date:"d M Y H:i" }}</p>
+            {% if order.coupon %}
+                <p><strong>Cupón Aplicado:</strong> {{ order.coupon.code }} ({{ order.coupon.discount_percentage }}% de descuento)</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            Detalles de Envío
+        </div>
+        <div class="card-body">
+            <p><strong>Nombre:</strong> {{ order.shipping_name }}</p>
+            <p><strong>Dirección:</strong> {{ order.shipping_address }}</p>
+            <p><strong>Teléfono:</strong> {{ order.shipping_phone }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            Artículos del Pedido
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Descuento</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.price_at_purchase|floatformat:2 }}</td>
+                            <td>${{ item.discount_at_purchase|floatformat:2 }}</td>
+                            <td>${{ item.get_total_price|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if order.status == 'PROCESSING' %}
+    <div class="text-center">
+        <form action="{% url 'dispatch_order' order.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-lg">Despachar Orden</button>
+        </form>
+    </div>
+    {% elif order.status == 'SHIPPED' %}
+    <div class="alert alert-success text-center" role="alert">
+        Esta orden ya ha sido despachada.
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'warehouse_order_list' %}" class="btn btn-secondary">Volver a la Lista de Órdenes</a>
+    </div>
+</div>
+{% endblock %}

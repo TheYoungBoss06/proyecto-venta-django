@@ -1,0 +1,24 @@
+{% extends 'base.html' %} {# Assuming you have a base.html for layout #}
+{% load static %}
+
+{% block title %}Despacho Exitoso{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5 text-center">
+    <h1>¡Éxito!</h1>
+    <p>{{ message }}</p> {# This will display the success message from the view #}
+    <p>Serás redirigido al historial de facturas en unos segundos...</p>
+</div>
+
+<script>
+    // Function to redirect after a delay
+    function redirectToInvoiceHistory() {
+        setTimeout(function() {
+            window.location.href = "{% url 'view_all_invoices' %}";
+        }, 3000); // 3000 milliseconds = 3 seconds
+    }
+
+    // Call the function when the page loads
+    window.onload = redirectToInvoiceHistory;
+</script>
+{% endblock %}

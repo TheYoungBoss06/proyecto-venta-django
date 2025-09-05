@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Factura</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Style CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'images/fevicon.png' %}" type="image/gif" />
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/jquery.mCustomScrollbar.min.css' %}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <!-- Fancybox CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+</head>
+<body class="main-layout">
+    <div class="loader_bg">
+        <div class="loader"><img src="{% static 'images/loading.gif' %}" alt="#" /></div>
+    </div>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div id="dismiss">
+                <i class="fa fa-arrow-left"></i>
+            </div>
+            <ul class="list-unstyled components">
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'about_us'%}">Sobre nosotros</a></li>
+                <li><a href="{% url 'view_products' %}">Productos</a></li>
+                <li><a href="{% url 'view_blog' %}">Blog</a></li>
+                <li class="active"><a href="{% url 'contact' %}">Contáctanos</a></li>
+                <li><a href="{% url 'view_all_invoices' %}">Ver mis facturas</a></li>
+            </ul>
+        </nav>
+
+        <div id="content">
+            <!-- Header -->
+            <header>
+                <div class="header">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-3 logo_section">
+                                <div class="full">
+                                    <div class="center-desk">
+                                        <div class="logo"> <a href="{% url 'index' %}"><img src="{% static 'images/logo.jpg' %}" alt="#"></a> </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-9">
+                                <div class="right_header_info">
+                                    <ul>
+                                        <li><button type="button" id="sidebarCollapse"><img src="{% static 'images/menu_icon.png' %}" alt="#" /></button></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- End Header -->
+
+            <div class="contactus">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <div class="title">
+                                <h2>Factura de Venta</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Details -->
+            <div class="container mt-5 mb-5 text-center">
+                <h1>Detalles de la Factura</h1>
+                
+                <!-- Messages Display -->
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <!-- End Messages Display -->
+
+                {% if order %}
+                    <p><strong>Número de Factura:</strong> {{ order.id }}</p>
+                    <p><strong>Fecha:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Cliente:</strong> {{ order.user.username }}</p>
+                    <p><strong>Estado del Pedido:</strong> {{ order.get_status_display }}</p>
+                    <p><strong>ID de Transacción:</strong> {{ order.payment_id }}</p>
+                    
+                    {% if order.coupon %}
+                        <p><strong>Cupón Aplicado:</strong> {{ order.coupon.code }} ({{ order.coupon.discount_percentage }}% de descuento)</p>
+                    {% endif %}
+
+                    <hr>
+                    <h3>Detalles de Envío</h3>
+                    <p><strong>Nombre:</strong> {{ order.shipping_name }}</p>
+                    <p><strong>Dirección:</strong> {{ order.shipping_address }}</p>
+                    <p><strong>Teléfono:</strong> {{ order.shipping_phone }}</p>
+                    <hr>
+
+                    <h3>Artículos del Pedido</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Descuento por Artículo</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.price_at_purchase }}</td>
+                                    <td>-${{ item.discount_at_purchase }}</td>
+                                    <td>${{ item.subtotal }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <h4 class="text-right mt-4"><strong>Monto Total Pagado:</strong> ${{ order.total_amount }}</h4>
+                    
+                    <p class="mt-4">¡Gracias por tu compra!</p>
+
+                    {# Show button to dispatch the order #}
+                    {% if order %}
+                        <div class="mt-4">
+                            <form action="{% url 'dispatch_order' order.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">Despachar</button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    <p>No se pudo encontrar la información de la factura.</p>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{% url 'view_products' %}" class="btn btn-primary">Volver a Productos</a>
+                </div>
+            </div>
+            <!-- End Invoice Details -->
+
+            <!-- Footer -->
+            <footer>
+                <div class="footer">
+                    <div class="container-fluid">
+                        <div class="border1">
+                            <div class="row">
+                                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
+                                    <img class="logo1" src="{% static 'images/logo1.jpg' %}"/>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                                    <ul class="lik">
+                                        <li><a href="{% url 'index' %}">Inicio</a></li>
+                                        <li><a href="{% url 'about_us'%}">Sobre nosotros</a></li>
+                                        <li><a href="{% url 'view_products' %}">Productos</a></li>
+                                        <li><a href="{% url 'view_blog' %}">Blog</a></li>
+                                        <li><a href="{% url 'contact' %}">Contáctanos</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12">
+                                    <ul class="sociel">
+                                        <li><a href="#"><i class="fa fa-facebook-f"></i></a></li>
+                                        <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                                        <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+                                        <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="newtt">
+                                    <p>Es un hecho establecido desde hace mucho tiempo que un lector se distraerá con el contenido legible de una página al mirar su diseño. El punto<br> de usar Lorem I</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="copyright">
+                            <p>Copyright 2019 Todos los derechos reservados por Wilson Espinal</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- End Footer -->
+        </div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <!-- Javascript files-->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
+    <script src="{% static 'js/plugin.js' %}"></script>
+    <!-- sidebar -->
+    <script src="{% static 'js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script src="https:cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#sidebar").mCustomScrollbar({
+                theme: "minimal"
+            });
+            $('#dismiss, .overlay').on('click', function () {
+                $('#sidebar').removeClass('active');
+                $('.overlay').removeClass('active');
+            });
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').addClass('active');
+                $('.overlay').addClass('active');
+                $('.collapse.in').toggleClass('in');
+                $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $(".fancybox").fancybox({
+                openEffect: "none",
+                closeEffect: "none"
+            });
+            $(".zoom").hover(function(){
+                $(this).addClass('transition');
+            }, function(){
+                $(this).removeClass('transition');
+            });
+        });
+    </script>
+</body>
+</html>
